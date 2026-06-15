@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF2MD · 基于 PaddleOCR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📄 PDF2MD <small>base PaddleOCR</small></h1>
+            <p class="subtitle">上传 PDF，云端解析为 Markdown —— 支持大文件分卷、断点续传、实时进度</p>
+        </header>
+
+        <!-- 上传表单 -->
+        <section id="upload-card" class="card">
+            <form id="upload-form">
+                <div class="field">
+                    <label for="file">PDF 文件</label>
+                    <div id="dropzone" class="dropzone">
+                        <input type="file" id="file" name="file" accept=".pdf" hidden>
+                        <p id="dropzone-text">点击或拖拽 PDF 到此处</p>
+                        <p id="dropzone-hint" class="hint">仅支持 .pdf</p>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="api_key">PaddleOCR API Key</label>
+                    <input type="password" id="api_key" name="api_key"
+                           placeholder="在 AI Studio 获取的 access token">
+                    <small class="hint">仅用于本次请求，不保存到服务器磁盘。</small>
+                </div>
+
+                <div class="row">
+                    <div class="field grow">
+                        <label for="book_name">书名 / 输出名（可选）</label>
+                        <input type="text" id="book_name" name="book_name"
+                               placeholder="留空则使用文件名">
+                    </div>
+                    <div class="field">
+                        <label for="pages_per_chunk">每卷页数</label>
+                        <input type="number" id="pages_per_chunk" name="pages_per_chunk"
+                               value="30" min="5" max="100">
+                    </div>
+                </div>
+
+                <button type="submit" id="submit-btn" class="primary" disabled>开始解析</button>
+                <p id="form-error" class="error-text"></p>
+            </form>
+        </section>
+
+        <!-- 进度面板 -->
+        <section id="progress-card" class="card hidden">
+            <div class="progress-header">
+                <h2 id="job-title">解析中…</h2>
+                <span id="job-status" class="badge running">运行中</span>
+            </div>
+
+            <div class="bar-wrap">
+                <div id="bar" class="bar"></div>
+                <span id="bar-pct" class="bar-pct">0%</span>
+            </div>
+
+            <div class="stats">
+                <div class="stat"><span class="label">总页数</span><span id="stat-pages" class="value">-</span></div>
+                <div class="stat"><span class="label">分卷进度</span><span id="stat-chunks" class="value">-</span></div>
+                <div class="stat"><span class="label">当前卷</span><span id="stat-current" class="value">-</span></div>
+                <div class="stat"><span class="label">用时</span><span id="stat-elapsed" class="value">-</span></div>
+            </div>
+
+            <div class="log-wrap">
+                <div class="log-title">实时日志</div>
+                <pre id="log" class="log"></pre>
+            </div>
+
+            <div class="actions">
+                <button id="cancel-btn" class="ghost">取消任务</button>
+                <a id="download-btn" class="primary hidden" href="#">⬇ 下载 Markdown</a>
+                <button id="reset-btn" class="ghost hidden">解析新文件</button>
+            </div>
+        </section>
+
+        <footer>
+            <p>本项目仅供学习使用 · OCR 由 <a href="https://www.paddleocr.ai" target="_blank" rel="noopener">PaddleOCR-VL</a> 提供</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# 运行时产物（绝不提交用户文件与解析结果）
+uploads/
+outputs/
+outputs_*/
+chunks/
+chunks_*/
+progress*.json
+
+# 输入 PDF / 大文件
+*.pdf
+
+# 日志与密钥
+*.log
+.env
+secret*.txt
+
+# 系统/IDE
+.DS_Store
+.idea/
+.vscode/
