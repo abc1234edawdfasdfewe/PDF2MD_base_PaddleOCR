@@ -10,42 +10,52 @@
     <div class="container">
         <header>
             <h1>📄 PDF2MD <small>base PaddleOCR</small></h1>
-            <p class="subtitle">上传 PDF，云端解析为 Markdown —— 支持大文件分卷、断点续传、实时进度</p>
+            <p class="subtitle">批量上传 PDF → Markdown · 多 API Key 自动并发 · 实时进度</p>
         </header>
 
         <!-- 上传表单 -->
         <section id="upload-card" class="card">
             <form id="upload-form">
                 <div class="field">
-                    <label for="file">PDF 文件</label>
+                    <label>PDF 文件（可多选）</label>
                     <div id="dropzone" class="dropzone">
-                        <input type="file" id="file" name="file" accept=".pdf" hidden>
-                        <p id="dropzone-text">点击或拖拽 PDF 到此处</p>
+                        <input type="file" id="file" name="file" accept=".pdf" multiple hidden>
+                        <p id="dropzone-text">点击或拖拽 PDF 到此处（支持多选）</p>
                         <p id="dropzone-hint" class="hint">仅支持 .pdf</p>
                     </div>
+                    <div id="file-list" class="file-list"></div>
                 </div>
 
                 <div class="field">
-                    <label for="api_key">PaddleOCR API Key</label>
-                    <input type="password" id="api_key" name="api_key"
-                           placeholder="在 AI Studio 获取的 access token">
-                    <small class="hint">仅用于本次请求，不保存到服务器磁盘。</small>
+                    <label for="api_keys">PaddleOCR API Key（每行一个，多个自动并发）</label>
+                    <textarea id="api_keys" name="api_keys" rows="3"
+                              placeholder="20fe0f98...&#10;粘贴第 2 个 Key 即开启 2 路并发"></textarea>
+                    <small class="hint">并发数 = Key 数；单 Key 时逐个顺序处理。仅用于本次请求，不落盘。</small>
                 </div>
 
-                <div class="row">
-                    <div class="field grow">
-                        <label for="book_name">书名 / 输出名（可选）</label>
-                        <input type="text" id="book_name" name="book_name"
-                               placeholder="留空则使用文件名">
+                <div class="field">
+                    <label>输出命名方式</label>
+                    <div class="radios">
+                        <label class="radio">
+                            <input type="radio" name="naming" value="filename" checked>
+                            <span>使用 PDF 文件名（默认）</span>
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="naming" value="custom">
+                            <span>自定义名称</span>
+                        </label>
                     </div>
-                    <div class="field">
-                        <label for="pages_per_chunk">每卷页数</label>
-                        <input type="number" id="pages_per_chunk" name="pages_per_chunk"
-                               value="30" min="5" max="100">
-                    </div>
+                    <input type="text" id="custom_name" name="custom_name"
+                           placeholder="自定义名称（多文件时自动加序号）" disabled>
                 </div>
 
-                <button type="submit" id="submit-btn" class="primary" disabled>开始解析</button>
+                <div class="field">
+                    <label for="pages_per_chunk">每卷页数</label>
+                    <input type="number" id="pages_per_chunk" name="pages_per_chunk"
+                           value="30" min="5" max="100">
+                </div>
+
+                <button type="submit" id="submit-btn" class="primary" disabled>开始批量解析</button>
                 <p id="form-error" class="error-text"></p>
             </form>
         </section>
@@ -53,7 +63,7 @@
         <!-- 进度面板 -->
         <section id="progress-card" class="card hidden">
             <div class="progress-header">
-                <h2 id="job-title">解析中…</h2>
+                <h2 id="job-title">批量解析中…</h2>
                 <span id="job-status" class="badge running">运行中</span>
             </div>
 
@@ -63,26 +73,23 @@
             </div>
 
             <div class="stats">
-                <div class="stat"><span class="label">总页数</span><span id="stat-pages" class="value">-</span></div>
-                <div class="stat"><span class="label">分卷进度</span><span id="stat-chunks" class="value">-</span></div>
-                <div class="stat"><span class="label">当前卷</span><span id="stat-current" class="value">-</span></div>
+                <div class="stat"><span class="label">文件进度</span><span id="stat-files" class="value">-</span></div>
+                <div class="stat"><span class="label">并发数</span><span id="stat-conc" class="value">-</span></div>
+                <div class="stat"><span class="label">成功 / 失败</span><span id="stat-ok" class="value">-</span></div>
                 <div class="stat"><span class="label">用时</span><span id="stat-elapsed" class="value">-</span></div>
             </div>
 
-            <div class="log-wrap">
-                <div class="log-title">实时日志</div>
-                <pre id="log" class="log"></pre>
-            </div>
+            <div class="file-rows" id="file-rows"></div>
 
             <div class="actions">
                 <button id="cancel-btn" class="ghost">取消任务</button>
-                <a id="download-btn" class="primary hidden" href="#">⬇ 下载 Markdown</a>
-                <button id="reset-btn" class="ghost hidden">解析新文件</button>
+                <a id="download-all-btn" class="primary hidden" href="#">⬇ 下载全部 (zip)</a>
+                <button id="reset-btn" class="ghost hidden">解析新一批</button>
             </div>
         </section>
 
         <footer>
-            <p>本项目仅供学习使用 · OCR 由 <a href="https://www.paddleocr.ai" target="_blank" rel="noopener">PaddleOCR-VL</a> 提供</p>
+            <p>OCR 由 <a href="https://www.paddleocr.ai" target="_blank" rel="noopener">PaddleOCR-VL</a> 提供 · 仅供学习使用</p>
         </footer>
     </div>
 

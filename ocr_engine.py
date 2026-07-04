@@ -42,7 +42,7 @@ class OCREngine:
         self.book_name = book_name or os.path.splitext(os.path.basename(pdf_path))[0]
         self.output_dir = output_dir
         self.pages_per_chunk = pages_per_chunk
-        self.model = model
+        self.model = model or DEFAULT_MODEL  # 防御 None/空值导致 model 字段丢失
         self.on_progress = on_progress or (lambda event: None)
         self.max_upload_retries = max_upload_retries
         self.max_job_retries = max_job_retries
